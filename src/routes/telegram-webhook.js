@@ -23,8 +23,6 @@ router.post(`/${config.telegram.token}`, async (req, res, next) => {
     return;
   }
 
-  console.log(config);
-
   if(getChannelName(req.body) !== config.telegram.channelName) {
     console.warn(`Not from ${config.telegram.channelName} channel, odd :|`, req.body);
     res.json({});
