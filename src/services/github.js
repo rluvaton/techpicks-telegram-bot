@@ -95,7 +95,18 @@ const addNewTechPicksToGitHub = async ({content, timestamp}) => {
     const pathSha = await getPathSha(path);
     await createFileAtRepo({path, message: `Adding ${path} file`, content, pathSha});
 
-    const openPrResult = await createPrAtRepo(`Adding ${path} file`);
+    let openPrResult;
+    try {
+        openPrResult = await createPrAtRepo(`Adding ${path} file`);
+    } catch (e) {
+        // TODO: change check against the message as messages can change more frequently than other things.
+        //       And status 422 can be other things too (I think)
+        if(e.status === 422 && e.message.startsWith('A pull request already exists')) {
+            console.log('A PR already exists', e);
+            return;
+        }
+        console.error('Failed to create PR', e);
+    }
     const newPrNumber = openPrResult?.data?.number;
 
     await addLabelToPr(newPrNumber, config.github.label);
