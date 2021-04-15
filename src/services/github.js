@@ -123,9 +123,6 @@ function getDateFromContent(content) {
 
     const results = TECH_PICKS_REGEX.exec(content);
 
-    // Reset the regex so if we run again it'll produce the same results
-    TECH_PICKS_REGEX.lastIndex = undefined;
-
     // 6 groups for:
     //  1. Title itself
     //  2. Whole date
