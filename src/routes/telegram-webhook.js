@@ -6,18 +6,29 @@ const telegram = require('../services/telegram');
 
 const router = express.Router();
 
+function assertMessageIsFromTechPicksChannel(event) {
+  if (!telegram.isEventIsAChannelMessage(event)) {
+    const error = new Error('Not a channel message');
+    error.additionalData = {event};
+    throw error;
+  }
+
+  if (telegram.getChannelName(event) !== config.telegram.channelName) {
+    const error = new Error(`Not from ${config.telegram.channelName} channel, odd :|`);
+    error.additionalData = {event};
+    throw error;
+  }
+}
+
 // Using the bot token as the path to make sure it's from telegram.
 // As recommended here: https://core.telegram.org/bots/faq#how-can-i-make-sure-that-webhook-requests-are-coming-from-telegram
 router.post(`/${config.telegram.token}`, async (req, res) => {
-  if (!telegram.isEventIsAChannelMessage(req.body)) {
-    console.warn('Not a channel message', req.body);
-    res.json({});
-    return;
-  }
-
-  if (telegram.getChannelName(req.body) !== config.telegram.channelName) {
-    console.warn(`Not from ${config.telegram.channelName} channel, odd :|`, req.body);
-    res.json({});
+  try {
+    assertMessageIsFromTechPicksChannel(req.body);
+  } catch (e) {
+    console.error(e, e.additionalData);
+    // I think (I'm not sure) that if we return an error telegram will try to resend the event
+    res.send({});
     return;
   }
 
@@ -25,13 +36,20 @@ router.post(`/${config.telegram.token}`, async (req, res) => {
 
   console.log('new channel message', {content, date});
 
-  if(!TECH_PICKS_REGEX.test(content)) {
+  if (!TECH_PICKS_REGEX.test(content)) {
     console.error('Not a valid TechPicks message', {requestBody: req.body, content});
     res.json({});
     return;
   }
 
-  await addNewTechPicksToGitHub({content, timestamp: date});
+  try {
+    await addNewTechPicksToGitHub({content, timestamp: date});
+  } catch (e) {
+    console.error('Some error happened while trying to create a new TechPicks update in GitHub', {
+      requestBody: req.body,
+      content
+    }, e);
+  }
 
   res.json({});
 });
