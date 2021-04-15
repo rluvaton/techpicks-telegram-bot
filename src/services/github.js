@@ -3,7 +3,7 @@ const config = require('../config');
 
 const octokit = new Octokit({auth: config.github.token});
 
-async function isGitHubBranchExists({owner, repo, branch}) {
+async function isBranchExists({owner, repo, branch}) {
     try {
         await octokit.request('GET /repos/{owner}/{repo}/branches/{branch}', {
             owner,
@@ -64,7 +64,7 @@ async function getPathSha({owner, repo, path}) {
 
 }
 
-async function createFileAtRepo({owner, repo, path, message, content, pathSha, branch}) {
+async function createFile({owner, repo, path, message, content, pathSha, branch}) {
     return await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
         owner,
         repo,
@@ -81,7 +81,7 @@ async function createFileAtRepo({owner, repo, path, message, content, pathSha, b
     });
 }
 
-async function createPrAtRepo({owner, repo, branch, title, base}) {
+async function createPr({owner, repo, branch, title, base}) {
     return await octokit.request('POST /repos/{owner}/{repo}/pulls', {
         owner,
         repo,
@@ -91,11 +91,11 @@ async function createPrAtRepo({owner, repo, branch, title, base}) {
     })
 }
 
-async function addLabelsToPr({owner, repo, prNumber, labels}) {
+async function addLabelsToPrOrIssue({owner, repo, prOrIssueNumber, labels}) {
     return await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/labels', {
         owner,
         repo,
-        issue_number: prNumber,
+        issue_number: prOrIssueNumber,
         labels: [
             ...labels
         ]
@@ -103,11 +103,11 @@ async function addLabelsToPr({owner, repo, prNumber, labels}) {
 }
 
 module.exports = {
-    isGitHubBranchExists,
+    isBranchExists,
     getSHAForBranch,
     createBranch,
     getPathSha,
-    createFileAtRepo,
-    createPrAtRepo,
-    addLabelsToPr,
+    createFile,
+    createPr,
+    addLabelsToPrOrIssue,
 };

@@ -2,29 +2,51 @@ const config = require('../config');
 const {TECH_PICKS_REGEX} = require('../common');
 const {
     getSHAForBranch,
-    isGitHubBranchExists,
+    isBranchExists,
     createBranch,
     getPathSha,
-    createPrAtRepo,
-    createFileAtRepo,
-    addLabelsToPr
+    createPr,
+    createFile,
+    addLabelsToPrOrIssue
 } = require('./github');
 
-const addNewTechPicksToGitHub = async ({content, timestamp}) => {
-    const repoConf = {
-        repo: config.github.repo,
-        owner: config.github.owner,
-    };
+const getRepoConf = () => ({
+    repo: config.github.repo,
+    owner: config.github.owner,
+});
 
-    const isBranchExists = await isGitHubBranchExists({...repoConf, branch: config.github.branch});
-    if (!isBranchExists) {
-        const mainSha = await getSHAForBranch({...repoConf, branch: 'main'});
-        if (!mainSha) {
-            throw new Error(`SHA for main branch can't be falsy`);
-        }
-        await createBranch({...repoConf, branch: config.github.branch, sourceSha: mainSha});
+async function ensureGitHubBranchExists() {
+    const repoConf = getRepoConf();
+
+    const isBranchExists = await isBranchExists({...repoConf, branch: config.github.branch});
+    if (isBranchExists) {
+        return;
     }
 
+    const mainSha = await getSHAForBranch({...repoConf, branch: 'main'});
+    if (!mainSha) {
+        throw new Error(`SHA for main branch can't be falsy`);
+    }
+
+    await createBranch({...repoConf, branch: config.github.branch, sourceSha: mainSha});
+}
+
+async function createNewTechPicksFile(path, content) {
+    const repoConf = getRepoConf();
+
+    const pathSha = await getPathSha({...repoConf, path});
+
+    await createFile({
+        ...repoConf,
+        branch: config.github.branch,
+        path,
+        message: `Adding ${path} file`,
+        content,
+        pathSha
+    });
+}
+
+function getTechPicksFilePath(content, timestamp) {
     let date;
 
     try {
@@ -39,20 +61,15 @@ const addNewTechPicksToGitHub = async ({content, timestamp}) => {
 
     // The month is from 0-11 so we +1 it to get the "human" month
     const path = `${config.github.filePrefixPath || ''}${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}.txt`;
+    return path;
+}
 
-    const pathSha = await getPathSha({...repoConf, path});
-    await createFileAtRepo({
-        ...repoConf,
-        branch: config.github.branch,
-        path,
-        message: `Adding ${path} file`,
-        content,
-        pathSha
-    });
+async function createNewTechPicksPr() {
+    const repoConf = getRepoConf();
 
     let openPrResult;
     try {
-        openPrResult = await createPrAtRepo({
+        openPrResult = await createPr({
             ...repoConf,
             branch: config.github.branch,
             title: `Adding ${path} file`,
@@ -63,13 +80,32 @@ const addNewTechPicksToGitHub = async ({content, timestamp}) => {
         //       And status 422 can be other things too (I think)
         if (e.status === 422 && e.message.startsWith('A pull request already exists')) {
             console.log('A PR already exists', e);
-            return;
+            return -1;
         }
-        console.error('Failed to create PR', e);
+        console.error('Failed to create PR', e)
+        throw e;
     }
-    const newPrNumber = openPrResult?.data?.number;
 
-    await addLabelsToPr({...repoConf, newPrNumber, labels: [config.github.label]});
+    return openPrResult?.data?.number;
+}
+
+const addNewTechPicksToGitHub = async ({content, timestamp}) => {
+    const repoConf = getRepoConf();
+
+    await ensureGitHubBranchExists();
+
+    const path = getTechPicksFilePath(content, timestamp);
+    await createNewTechPicksFile(path, content);
+
+    const prNumber = await createNewTechPicksPr();
+
+    // Meaning that the PR already exist
+    // Therefore there is no need to add labels to an already exists Pr (which already have label probably)
+    if (prNumber === -1) {
+        return;
+    }
+
+    await addLabelsToPrOrIssue({...repoConf, prOrIssueNumber: prNumber, labels: [config.github.label]});
 };
 
 function getDateFromContent(content) {
