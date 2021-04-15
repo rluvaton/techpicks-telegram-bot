@@ -1,7 +1,7 @@
 const express = require('express');
 const config = require('../config');
 const {TECH_PICKS_REGEX} = require('../common');
-const {addNewTechPicksToGitHub} = require('../services/github');
+const {addNewTechPicksToGitHub} = require('../services/techpicks');
 
 const router = express.Router();
 
