@@ -28,6 +28,7 @@ router.post(`/${config.telegram.token}`, async (req, res) => {
   } catch (e) {
     console.error(e, e.additionalData);
     // I think (I'm not sure) that if we return an error telegram will try to resend the event
+    // And we don't want to get the event again because it's not belong here
     res.send({});
     return;
   }
@@ -49,6 +50,10 @@ router.post(`/${config.telegram.token}`, async (req, res) => {
       requestBody: req.body,
       content
     }, e);
+
+    // I think (I'm not sure) that if we return an error telegram will try to resend the event
+    res.status(500).json({});
+    return;
   }
 
   res.json({});
