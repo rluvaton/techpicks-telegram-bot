@@ -1,3 +1,6 @@
+// When using console this will make it print the whole object. and not [Object] when it's too deep
+require("util").inspect.defaultOptions.depth = null;
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
