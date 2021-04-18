@@ -31,14 +31,14 @@ async function ensureGitHubBranchExists() {
     await createBranch({...repoConf, branch: config.github.branch, sourceSha: mainSha});
 }
 
-async function createNewTechPicksFile(path, content) {
+async function createNewTechPicksFile(branch, path, content) {
     const repoConf = getRepoConf();
 
-    const pathSha = await getPathSha({...repoConf, path});
+    const pathSha = await getPathSha({...repoConf, path, branch});
 
     await createFile({
         ...repoConf,
-        branch: config.github.branch,
+        branch,
         path,
         message: `Adding ${path} file`,
         content,
@@ -64,7 +64,7 @@ function getTechPicksFilePath(content, timestamp) {
     return path;
 }
 
-async function createNewTechPicksPr() {
+async function createNewTechPicksPr(path) {
     const repoConf = getRepoConf();
 
     let openPrResult;
@@ -95,9 +95,9 @@ const addNewTechPicksToGitHub = async ({content, timestamp}) => {
     await ensureGitHubBranchExists();
 
     const path = getTechPicksFilePath(content, timestamp);
-    await createNewTechPicksFile(path, content);
+    await createNewTechPicksFile(config.github.branch, path, content);
 
-    const prNumber = await createNewTechPicksPr();
+    const prNumber = await createNewTechPicksPr(path);
 
     // Meaning that the PR already exist
     // Therefore there is no need to add labels to an already exists Pr (which already have label probably)

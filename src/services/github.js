@@ -1,5 +1,7 @@
 const {Octokit} = require("@octokit/core");
 const config = require('../config');
+const axios = require('axios');
+const gitHashObject = require('git-hash-object');
 
 const octokit = new Octokit({auth: config.github.token});
 
@@ -42,43 +44,72 @@ async function createBranch({owner, repo, branch, sourceSha}) {
     })
 }
 
-async function getPathSha({owner, repo, path}) {
-    let pathDetails;
+async function getPathShaFromGithub({owner, repo, path}) {
+    const pathDetails = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+        owner,
+        repo,
+        path
+    });
+
+    return pathDetails.data.sha;
+}
+
+async function getPathShaManually({owner, repo, path, branch}) {
+    const requestUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
+
+    const fileContentRes = await axios.get(requestUrl);
+    const fileContent = fileContentRes.data;
+
+    if (!fileContent) {
+        const error = new Error('file dont exist');
+        error.status = 404;
+        throw error;
+    }
+
+    return gitHashObject(fileContent)
+}
+
+async function getPathSha({owner, repo, path, branch}) {
+    let pathSha;
     try {
-        pathDetails = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-            owner,
-            repo,
-            path
-        });
+        // GitHub only support getting the path detail from the default branch
+        if (!branch) {
+            pathSha = await getPathShaFromGithub({owner, repo, path})
+        } else {
+            pathSha = await getPathShaManually({owner, repo, path, branch});
+        }
 
     } catch (e) {
         if (e.status === 404) {
             return undefined;
         }
 
-        console.error('Failed getting path sha', e);
+        console.error('Failed getting path sha', {owner, repo, path, branch}, e);
         throw e;
     }
 
-    return pathDetails.data.sha;
+    return pathSha;
 
 }
 
 async function createFile({owner, repo, path, message, content, pathSha, branch}) {
-    return await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+    const options = {
         owner,
         repo,
         path,
+        message,
+
         // In case of updating
         sha: pathSha,
-        message,
 
         // The input should be encoded in base64 as said here:
         // https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents--parameters (`content` value)
         content: Buffer.from(content).toString('base64'),
 
         branch,
-    });
+    };
+
+    return await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', options);
 }
 
 async function createPr({owner, repo, branch, title, base}) {
