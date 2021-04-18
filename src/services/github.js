@@ -133,6 +133,14 @@ async function addLabelsToPrOrIssue({owner, repo, prOrIssueNumber, labels}) {
     })
 }
 
+async function createGist(files, description = '', isPrivate = true) {
+    await octokit.request('POST /gists', {
+        files,
+        description: '',
+        public: !isPrivate
+    })
+}
+
 module.exports = {
     isBranchExists,
     getSHAForBranch,
@@ -141,4 +149,5 @@ module.exports = {
     createFile,
     createPr,
     addLabelsToPrOrIssue,
+    createGist,
 };

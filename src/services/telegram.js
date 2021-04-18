@@ -42,5 +42,6 @@ module.exports = {
     isEventIsAChannelMessage,
     getChannelName,
     getChannelMessage,
-    sendMessage
+    sendMessage,
+    MAX_MESSAGE_LENGTH: 4096,
 }
