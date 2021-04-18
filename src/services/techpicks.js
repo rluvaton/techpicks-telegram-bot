@@ -18,8 +18,8 @@ const getRepoConf = () => ({
 async function ensureGitHubBranchExists() {
     const repoConf = getRepoConf();
 
-    const isBranchExists = await isBranchExists({...repoConf, branch: config.github.branch});
-    if (isBranchExists) {
+    const isBranchExistsRes = await isBranchExists({...repoConf, branch: config.github.branch});
+    if (isBranchExistsRes) {
         return;
     }
 
