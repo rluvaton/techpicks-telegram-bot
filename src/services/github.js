@@ -145,11 +145,19 @@ async function addLabelsToPrOrIssue({owner, repo, prOrIssueNumber, labels}) {
 }
 
 async function createGist(files, description = '', isPrivate = true) {
-    await octokit.request('POST /gists', {
-        files,
-        description: '',
+    const formattedFiles = Object.entries(files).reduce((_formattedFiles, [fileName, fileContent]) => {
+        _formattedFiles[fileName] = {content: fileContent};
+        return _formattedFiles;
+    }, {});
+
+    const response = await octokit.request('POST /gists', {
+        files: formattedFiles,
+        description,
         public: !isPrivate
-    })
+    });
+
+    return response.data;
+
 }
 
 module.exports = {
