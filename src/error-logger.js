@@ -50,7 +50,51 @@ async function notifyUser(...args) {
 async function error(...args) {
     console.error(...args);
 
-    await notifyUser(...args);
+    const formattedArgs = args.map(arg => {
+        if (!(arg instanceof Error)) {
+            return arg;
+        }
+
+        return trimError(arg);
+    })
+
+    await notifyUser(...formattedArgs);
+}
+
+function trimError(error) {
+    const trimmedError = trimUnknownError(error);
+
+    if (error.isAxiosError) {
+        return trimAxiosError(trimmedError, error);
+    }
+
+    return trimmedError;
+}
+
+function trimUnknownError(error) {
+    const trimmedError = new Error(error.message);
+    trimmedError.stack = error.stack;
+    trimmedError.isTrimmed = true;
+    return trimmedError;
+}
+
+function trimAxiosError(trimmedError, axiosError) {
+    trimmedError.isAxiosError = true;
+
+    trimmedError.response = {
+        status: axiosError.response.status,
+        statusText: axiosError.response.statusText,
+        headers: axiosError.response.headers,
+        data: axiosError.response.data
+    };
+
+    trimmedError.config = {
+        url: axiosError.config.url,
+        method: axiosError.config.method,
+        headers: axiosError.config.headers,
+    };
+
+    return trimmedError;
 }
 
 module.exports = error;
