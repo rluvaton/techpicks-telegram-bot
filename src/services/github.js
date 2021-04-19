@@ -57,7 +57,18 @@ async function getPathShaFromGithub({owner, repo, path}) {
 async function getPathShaManually({owner, repo, path, branch}) {
     const requestUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
 
-    const fileContentRes = await axios.get(requestUrl);
+    let fileContentRes;
+    try {
+        fileContentRes = await axios.get(requestUrl);
+    } catch (e) {
+        if (!e.isAxiosError) {
+            throw e;
+        }
+
+        // If file don't exist it will return 404
+        e.status = e.response.status;
+        throw e;
+    }
     const fileContent = fileContentRes.data;
 
     if (!fileContent) {
