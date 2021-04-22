@@ -3,12 +3,22 @@ const config = require('../config');
 
 const isEventIsAChannelMessage = (telegramReq) => telegramReq?.channel_post?.chat?.type === 'channel';
 
-const getChannelName = (telegramReq) => telegramReq?.channel_post?.chat?.title;
+const isEventIsAChannelEditedMessage = (telegramReq) => telegramReq?.edited_channel_post?.chat?.type === 'channel';
 
-const getChannelMessage = (telegramReq) => ({
-    content: telegramReq.channel_post.text,
-    date: telegramReq.channel_post.date,
-});
+const getChannelName = (telegramReq, editedPost = false) => {
+    const channelPost = editedPost ? telegramReq?.edited_channel_post : telegramReq?.channel_post;
+
+    return channelPost?.chat?.title;
+};
+
+const getChannelMessage = (telegramReq, editedPost = false) => {
+    const channelPost = editedPost ? telegramReq.edited_channel_post : telegramReq.channel_post;
+
+    return {
+        content: channelPost.text,
+        date: channelPost.date,
+    };
+};
 
 const sendMessage = async (chatId, message, isMarkdown) => {
     let result;
@@ -40,6 +50,7 @@ const sendMessage = async (chatId, message, isMarkdown) => {
 
 module.exports = {
     isEventIsAChannelMessage,
+    isEventIsAChannelEditedMessage,
     getChannelName,
     getChannelMessage,
     sendMessage,
