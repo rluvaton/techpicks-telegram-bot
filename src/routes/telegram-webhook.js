@@ -8,13 +8,15 @@ const error = require('../error-logger');
 const router = express.Router();
 
 function assertMessageIsFromTechPicksChannel(event) {
-    if (!telegram.isEventIsAChannelMessage(event)) {
+    if (!telegram.isEventIsAChannelMessage(event) && !telegram.isEventIsAChannelEditedMessage(event)) {
         const error = new Error('Not a channel message');
         error.additionalData = {event};
         throw error;
     }
 
-    if (telegram.getChannelName(event) !== config.telegram.channelName) {
+    const isEditedChannelPost = telegram.isEventIsAChannelEditedMessage(event);
+
+    if (telegram.getChannelName(event, isEditedChannelPost) !== config.telegram.channelName) {
         const error = new Error(`Not from ${config.telegram.channelName} channel, odd :|`);
         error.additionalData = {event};
         throw error;
@@ -24,8 +26,10 @@ function assertMessageIsFromTechPicksChannel(event) {
 // Using the bot token as the path to make sure it's from telegram.
 // As recommended here: https://core.telegram.org/bots/faq#how-can-i-make-sure-that-webhook-requests-are-coming-from-telegram
 router.post(`/${config.telegram.token}`, async (req, res) => {
+    const event = req.body;
+
     try {
-        assertMessageIsFromTechPicksChannel(req.body);
+        assertMessageIsFromTechPicksChannel(event);
     } catch (e) {
         // We don't wait for the result because we don't need to do this before we respond to the client
         // noinspection ES6MissingAwait
@@ -37,7 +41,9 @@ router.post(`/${config.telegram.token}`, async (req, res) => {
         return;
     }
 
-    const {content, date} = telegram.getChannelMessage(req.body);
+    const isEditedChannelPost = telegram.isEventIsAChannelEditedMessage(event);
+
+    const {content, date} = telegram.getChannelMessage(event, isEditedChannelPost);
 
     console.log('new channel message', {content, date});
 
