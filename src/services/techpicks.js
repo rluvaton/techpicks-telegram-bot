@@ -60,7 +60,7 @@ function getTechPicksFilePath(content, timestamp) {
     }
 
     // The month is from 0-11 so we +1 it to get the "human" month
-    const path = `${config.github.filePrefixPath || ''}${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}.txt`;
+    const path = `${config.github.filePrefixPath || ''}${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}.md`;
     return path;
 }
 
