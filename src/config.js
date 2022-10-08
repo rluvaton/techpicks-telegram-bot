@@ -1,4 +1,7 @@
 module.exports = {
+    server: {
+        port: parseInt(process.env.PORT ?? '3000', 10)
+    },
     github: {
         token: process.env.GITHUB_TOKEN,
 
