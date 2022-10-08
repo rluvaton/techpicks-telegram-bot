@@ -12,6 +12,6 @@ module.exports = {
     telegram: {
         token: process.env.TELEGRAM_BOT_TOKEN,
         notifyChatId: process.env.TELEGRAM_NOTIFY_CHAT_ID,
-        channelName: process.env.TELEGRAM_CHANNEL_NAME,
+        channelId: parseInt(process.env.TELEGRAM_CHANNEL_ID, 10),
     }
 };
