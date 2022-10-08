@@ -10,7 +10,7 @@ const getChannelPostFromReq = (event) => {
     return isEditedChannelPost ? event?.edited_channel_post : event?.channel_post;
 };
 
-const getChannelID = (telegramReq) => getChannelPostFromReq(telegramReq)?.chat?.username;
+const getChannelID = (telegramReq) => getChannelPostFromReq(telegramReq)?.chat?.id;
 
 const getChannelName = (telegramReq) => getChannelPostFromReq(telegramReq)?.chat?.title;
 

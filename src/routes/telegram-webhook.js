@@ -16,7 +16,7 @@ function assertMessageIsFromTechPicksChannel(event) {
 
     const postChannelID = telegram.getChannelID(event);
     if (postChannelID !== config.telegram.channelId) {
-        const error = new Error(`Not from ${telegram.getChannelName(event)} channel (channel ID: ${postChannelID}), odd :|`);
+        const error = new Error(`Message is from ${telegram.getChannelName(event)} channel (channel ID: ${postChannelID}) and not from channel ID ${config.telegram.channelId}, odd :|`);
         error.additionalData = {event};
         throw error;
     }

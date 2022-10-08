@@ -3,11 +3,12 @@ require('dotenv-flow').config({
     default_node_env: 'development'
 });
 
+console.log(`env: ${process.env.NODE_ENV}`);
+
 /**
  * Module dependencies.
  */
 const app = require('../src/app');
-const debug = require('debug')('techpicks-telegram-bot:server');
 const http = require('http');
 
 /**
@@ -88,5 +89,5 @@ function onListening() {
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
-    debug('Listening on ' + bind);
+    console.log('Listening on ' + bind);
 }
