@@ -6,6 +6,11 @@ jobs:
   validate_fly_io_config_file:
     name: Validate fly.io config file
     runs-on: ubuntu-latest
+
+    env:
+      # For validation, we need for some reason the API token
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
     steps:
       - name: checkout
         uses: actions/checkout@v2
