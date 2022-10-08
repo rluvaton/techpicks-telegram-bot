@@ -5,14 +5,17 @@ const isEventIsAChannelMessage = (telegramReq) => telegramReq?.channel_post?.cha
 
 const isEventIsAChannelEditedMessage = (telegramReq) => telegramReq?.edited_channel_post?.chat?.type === 'channel';
 
-const getChannelName = (telegramReq, editedPost = false) => {
-    const channelPost = editedPost ? telegramReq?.edited_channel_post : telegramReq?.channel_post;
-
-    return channelPost?.chat?.title;
+const getChannelPostFromReq = (event) => {
+    const isEditedChannelPost = isEventIsAChannelEditedMessage(event)
+    return isEditedChannelPost ? event?.edited_channel_post : event?.channel_post;
 };
 
-const getChannelMessage = (telegramReq, editedPost = false) => {
-    const channelPost = editedPost ? telegramReq.edited_channel_post : telegramReq.channel_post;
+const getChannelID = (telegramReq) => getChannelPostFromReq(telegramReq)?.chat?.username;
+
+const getChannelName = (telegramReq) => getChannelPostFromReq(telegramReq)?.chat?.title;
+
+const getChannelMessage = (telegramReq) => {
+    const channelPost = getChannelPostFromReq(telegramReq);
 
     return {
         content: channelPost.text,
@@ -51,6 +54,7 @@ const sendMessage = async (chatId, message, isMarkdown) => {
 module.exports = {
     isEventIsAChannelMessage,
     isEventIsAChannelEditedMessage,
+    getChannelID,
     getChannelName,
     getChannelMessage,
     sendMessage,

@@ -14,10 +14,9 @@ function assertMessageIsFromTechPicksChannel(event) {
         throw error;
     }
 
-    const isEditedChannelPost = telegram.isEventIsAChannelEditedMessage(event);
-
-    if (telegram.getChannelName(event, isEditedChannelPost) !== config.telegram.channelName) {
-        const error = new Error(`Not from ${config.telegram.channelName} channel, odd :|`);
+    const postChannelID = telegram.getChannelID(event);
+    if (postChannelID !== config.telegram.channelId) {
+        const error = new Error(`Not from ${telegram.getChannelName(event)} channel (channel ID: ${postChannelID}), odd :|`);
         error.additionalData = {event};
         throw error;
     }
