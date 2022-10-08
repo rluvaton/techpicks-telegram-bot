@@ -29,12 +29,10 @@ async function startHttpServer() {
 
   const port = config.server.port;
 
-  const address = await fastify.listen({
+  await fastify.listen({
     port: port,
     host: '0.0.0.0',
   });
-
-  console.info(`listening on ${address}`);
 
   return fastify;
 }
