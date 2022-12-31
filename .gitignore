@@ -163,3 +163,6 @@ dist
 # dotenv environment variables file
 .env.local
 .env.*.local
+
+
+debug
