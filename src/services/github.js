@@ -2,8 +2,18 @@ const {Octokit} = require("@octokit/core");
 const config = require('../config');
 const axios = require('axios');
 const gitHashObject = require('git-hash-object');
+const { createAppAuth } = require('@octokit/auth-app');
 
-const octokit = new Octokit({auth: config.github.token});
+const octokit = new Octokit({
+    authStrategy: createAppAuth,
+    auth: {
+        appId: config.github.appId,
+        // Can be obtained from https://docs.github.com/en/rest/apps/apps?apiVersion=2022-11-28#list-installations-for-the-authenticated-app
+        installationId: config.github.appInstallationId,
+        type: 'installation',
+        privateKey: config.github.appPrivateKey,
+    }
+});
 
 async function isBranchExists({owner, repo, branch}) {
     try {
