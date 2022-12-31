@@ -1,9 +1,15 @@
 module.exports = {
+    disableErrorNotification: process.env.DISABLE_ERROR_NOTIFICATION === 'true',
+    logger: {
+        prettyPrint: process.env.PRETTY_PRINT === 'true'
+    },
     server: {
         port: parseInt(process.env.PORT ?? '3000', 10)
     },
     github: {
-        token: process.env.GITHUB_TOKEN,
+        appId: process.env.GITHUB_APP_ID,
+        appPrivateKey: process.env.GITHUB_APP_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        appInstallationId: process.env.GITHUB_APP_INSTALLATION_ID,
 
         owner: process.env.GITHUB_REPO_OWNER,
         repo: process.env.GITHUB_REPO_NAME,

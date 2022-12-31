@@ -16,6 +16,11 @@ async function fallbackToGitHubGist(message) {
 }
 
 async function notifyUser(...args) {
+    if(config.disableErrorNotification) {
+        console.log('Error notification is disabled');
+
+        return;
+    }
     console.log('Try notifying user on error.');
 
     let message = '```json\n' +
@@ -40,7 +45,7 @@ async function notifyUser(...args) {
     try {
         result = await telegram.sendMessage(config.telegram.notifyChatId, message, isMarkdown);
     } catch (e) {
-        console.error('Failed notifying user on error', e);
+        console.error('Failed notifying user on error', trimError(e));
         return;
     }
 

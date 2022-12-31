@@ -6,11 +6,13 @@
     "start": "node ./src/index.js"
   },
   "dependencies": {
+    "@octokit/auth-app": "^4.0.7",
     "@octokit/core": "^3.3.2",
     "axios": "^0.21.1",
     "dotenv": "^8.2.0",
     "dotenv-flow": "^3.2.0",
     "fastify": "^4.7.0",
-    "git-hash-object": "^1.1.0"
+    "git-hash-object": "^1.1.0",
+    "pino-pretty": "^9.1.1"
   }
 }
