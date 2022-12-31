@@ -1,4 +1,8 @@
 module.exports = {
+    disableErrorNotification: process.env.DISABLE_ERROR_NOTIFICATION === 'true',
+    logger: {
+        prettyPrint: process.env.PRETTY_PRINT === 'true'
+    },
     server: {
         port: parseInt(process.env.PORT ?? '3000', 10)
     },

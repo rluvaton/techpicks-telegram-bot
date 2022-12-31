@@ -13,8 +13,18 @@ async function setupHttpServer() {
     await fastify.close();
   }
 
+  let loggerConf = true;
+
+  if(config.logger.prettyPrint) {
+    loggerConf = {
+      transport: {
+        target: 'pino-pretty',
+      }
+    };
+  }
+
   fastify = Fastify({
-    logger: true,
+    logger: loggerConf,
 
     ignoreTrailingSlash: true,
   });

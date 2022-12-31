@@ -16,6 +16,11 @@ async function fallbackToGitHubGist(message) {
 }
 
 async function notifyUser(...args) {
+    if(config.disableErrorNotification) {
+        console.log('Error notification is disabled');
+
+        return;
+    }
     console.log('Try notifying user on error.');
 
     let message = '```json\n' +
